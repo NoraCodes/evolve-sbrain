@@ -60,7 +60,7 @@ fn mutate_population(population: Population) -> Vec<Program> {
 fn cost_program(program: &Program) -> u64 {
     let actual_output = "Hello, world!".to_string();
     let res = sbrain::fixed_evaluate(&(program.iter().collect::<String>()), Some(vec![1,2,3,4,5]), Some(100));
-    let mut score = i64::abs(actual_output.len() as i64 - res.output.len() as i64) as u64 * 128;
+    let mut score = i64::abs(actual_output.len() as i64 - res.output.len() as i64) as u64 * 1024;
     for (expected, actual) in res.output.into_iter().zip(actual_output.chars()) {
         if expected != actual as u32 {
             score += i64::abs(expected as i64 - actual as i64) as u64;

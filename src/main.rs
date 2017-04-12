@@ -1,7 +1,6 @@
 extern crate sbrain;
 extern crate random;
 use random::Source; // Trait for randomness iteration
-use std::char::from_u32;
 
 mod randomness;
 

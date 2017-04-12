@@ -5,7 +5,6 @@ use std::char::from_u32;
 
 mod randomness;
 
-const BF_SYMBOLS: [char; 8] = ['<', '>', '-', '+', '.', ',', '[', ']'];
 const SB_SYMBOLS: [char; 26] = ['<', '>', '-', '+', '.', ',', '[', ']', 
                                '{', '}', '(', ')', 'z', '!', 's', 'S', 
                                '@', '|', '&', '*', '^', 'a', 'd', 'q', 

@@ -1,7 +1,6 @@
 //! Randomness functionality for this program
 
 use super::random;
-use random::Source;
 use std::time::*;
 
 // Create a randomness source based on the current time.

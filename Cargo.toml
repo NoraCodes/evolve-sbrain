@@ -1,0 +1,7 @@
+[package]
+authors = ["SilverWingedSeraph <lfstindall@gmail.com>"]
+name = "evolve-sbrain"
+version = "0.1.0"
+[dependencies]
+random = "*"
+sbrain = "*"

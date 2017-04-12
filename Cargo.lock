@@ -1,0 +1,21 @@
+[root]
+name = "evolve-sbrain"
+version = "0.1.0"
+dependencies = [
+ "random 0.12.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sbrain 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "random"
+version = "0.12.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "sbrain"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[metadata]
+"checksum random 0.12.2 (registry+https://github.com/rust-lang/crates.io-index)" = "97d13a3485349981c90c79112a11222c3e6e75de1d52b87a7525b3bf5361420f"
+"checksum sbrain 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "a79320af22258344bbe54beed3becf10647f0e63a65271cb650a0e40e36f51eb"

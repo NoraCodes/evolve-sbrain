@@ -9,6 +9,8 @@ const SB_SYMBOLS: [char; 26] = ['<', '>', '-', '+', '.', ',', '[', ']',
                                '@', '|', '&', '*', '^', 'a', 'd', 'q', 
                                'm', 'p'];
 
+const MUTATIONS_PER_CYCLE: usize = 3;
+
 type Program = Vec<char>;
 type Population = Vec<(u64, Program)>;
 
@@ -30,8 +32,10 @@ fn generate_population(length: usize, individuals: usize) -> Population {
 
 fn mutate_program(mut program: Program) -> Program {
     let mut s = randomness::get_randomness();
-    let target_index: usize = s.read::<usize>() % program.len();
-    program[target_index] = SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()];
+    for _ in 0..MUTATIONS_PER_CYCLE {
+        let target_index: usize = s.read::<usize>() % program.len();
+        program[target_index] = SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()];
+    }
     program
 }
 

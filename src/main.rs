@@ -9,9 +9,12 @@ const SB_SYMBOLS: [char; 26] = ['<', '>', '-', '+', '.', ',', '[', ']',
                                '@', '|', '&', '*', '^', 'a', 'd', 'q', 
                                'm', 'p'];
 
-fn generate_random_program(length: usize) -> String {
+type Program = Vec<char>;
+type Population = Vec<(u64, Program)>;
+
+fn generate_random_program(length: usize) -> Program {
     let mut s = randomness::get_randomness();
-    let mut r = String::with_capacity(length);
+    let mut r = Vec::with_capacity(length);
 
     s.iter()
         .take(length)
@@ -20,19 +23,60 @@ fn generate_random_program(length: usize) -> String {
     r
 }
 
+fn generate_population(length: usize, individuals: usize) -> Population {
+    use std::u64::MAX;
+    (0..individuals).map(|_| { (MAX, generate_random_program(length)) }).collect()
+}
+
+fn mutate_program(mut program: Program) -> Program {
+    let mut s = randomness::get_randomness();
+    let target_index: usize = s.read::<usize>() % program.len();
+    program[target_index] = SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()];
+    program
+}
+
+fn mutate_population(mut population: Population) -> Vec<Program> {
+    population.into_iter().map(move |p| { mutate_program(p.1) } ).collect()
+}
+
+fn cost_program(program: &Program) -> u64 {
+    let actual_output = "Hello!".to_string();
+    let res = sbrain::fixed_evaluate(&(program.iter().collect::<String>()), Some(vec![1,2,3,4,5]), Some(100));
+    let mut score = i64::abs(actual_output.len() as i64 - res.output.len() as i64) as u64;
+    for (expected, actual) in res.output.into_iter().zip(actual_output.chars()) {
+        if expected != actual as u32 {
+            score += i64::abs(expected as i64 - actual as i64) as u64;
+        }
+    }
+    score
+}
+
+fn cost_population(uncosted_population: Vec<Program>) -> Population {
+    uncosted_population.into_iter()
+        .map(move |p| (cost_program(&p), p))
+        .collect()
+}
+
+fn sort_population_by_cost(mut population: Population) -> Population {
+    population.sort_by_key(|k| k.0);
+    population
+}
+
 fn main() {
-    
-    let mut p;
-    let mut res;
+    let mut pop: Population = generate_population(64, 16);
     let mut tries = 0;
     loop {
         tries += 1;
-        p = generate_random_program(32);
-        res = sbrain::fixed_evaluate(&p, Some(vec![1,2,3,4,5]), Some(1000));
-        if res.output.len() > 0 { break; }
+        pop = cost_population(mutate_population(pop));
+        pop = sort_population_by_cost(pop);
+        println!("Generation {:6}: {}", tries, pop[0].1.iter().collect::<String>());
+        if pop[0].0 == 0 { break; }
     }
-    println!("Program with output found after {} tries.", tries);
-    println!("{}", p);
+
+    let p = pop.into_iter().nth(0).unwrap();
+    let res = sbrain::fixed_evaluate(&(p.1.iter().collect::<String>()), Some(vec![1,2,3,4,5]), Some(100));
+    println!("Program found after {} tries.", tries);
+    println!("{}", p.1.iter().collect::<String>());
     println!("Ran for {} cycles and {} halt.\nGave: {:?}", 
         res.cycles, 
         if res.halted {"did"} else {"did not"}, 

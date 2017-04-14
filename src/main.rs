@@ -1,6 +1,8 @@
 extern crate sbrain;
 extern crate random;
+extern crate rayon;
 use random::Source; // Trait for randomness iteration
+use rayon::prelude::*;
 
 mod randomness;
 
@@ -30,7 +32,7 @@ fn generate_random_program(length: usize) -> Program {
 
 fn generate_population(length: usize, individuals: usize) -> Population {
     use std::u64::MAX;
-    (0..individuals).map(|_| { (MAX, generate_random_program(length)) }).collect()
+    (0..individuals).into_par_iter().map(|_| { (MAX, generate_random_program(length)) }).collect()
 }
 
 fn mutate_program(mut program: Program) -> Program {
@@ -43,7 +45,7 @@ fn mutate_program(mut program: Program) -> Program {
                 let target_index: usize = s.read::<usize>() % program.len();
                 program[target_index] = SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()];
             }  
-            1 => { program.push(SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()]); } 
+            1 => { program.insert(s.read::<usize>() % program_len, SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()]); } 
             2 => { program.remove(s.read::<usize>() % program_len); }
             _ => {}
         }
@@ -90,7 +92,7 @@ fn cost_program(program: &Program) -> u64 {
 }
 
 fn cost_population(uncosted_population: Vec<Program>) -> Population {
-    uncosted_population.into_iter()
+    uncosted_population.into_par_iter()
         .map(move |p| (cost_program(&p), p))
         .collect()
 }

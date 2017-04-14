@@ -16,6 +16,8 @@ const STARTING_LENGTH: usize = 32;
 const MAX_RUNTIME: u32 = 128;
 const POPULATION_SIZE: usize = 16;
 
+const LENGTH_WEIGHT: u64 = 1024;
+
 type Program = Vec<char>;
 type Population = Vec<(u64, Program)>;
 
@@ -80,10 +82,15 @@ fn mutate_population(population: Population) -> Vec<Program> {
 }
 
 fn cost_program(program: &Program) -> u64 {
-    let actual_output = "Hello, world!".to_string();
+    let expected_output = "Hello, world!".to_string();
     let res = sbrain::fixed_evaluate(&(program.iter().collect::<String>()), Some(vec![0]), Some(100));
-    let mut score = i64::abs(actual_output.len() as i64 - res.output.len() as i64) as u64 * 1024;
-    for (expected, actual) in res.output.into_iter().zip(actual_output.chars()) {
+
+    // Score for length
+    let mut score = 
+        if expected_output.len() > res.output.len() {expected_output.len() - res.output.len()}
+        else {res.output.len() - expected_output.len()} as u64 * LENGTH_WEIGHT;
+
+    for (expected, actual) in res.output.into_iter().zip(expected_output.chars()) {
         if expected != actual as u32 {
             score += i64::abs(expected as i64 - actual as i64) as u64;
         }

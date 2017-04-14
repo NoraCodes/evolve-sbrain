@@ -36,14 +36,16 @@ fn generate_population(length: usize, individuals: usize) -> Population {
 fn mutate_program(mut program: Program) -> Program {
     let mut s = randomness::get_randomness();
     for _ in 0..MUTATIONS_PER_CYCLE {
-        let mutation_type = s.read::<usize>() % 3; // HACK! Make enum and match
-        if mutation_type == 0 {
-            let target_index: usize = s.read::<usize>() % program.len();
-            program[target_index] = SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()];
-        } else if mutation_type == 1 {
-            program.push(SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()]);
-        } else if mutation_type == 2 {
-            program.pop();
+        let program_len = program.len();
+        let mutation_type = s.read::<usize>() % 5; // HACK! Make enum and match
+        match mutation_type {
+            0|3|4 => {
+                let target_index: usize = s.read::<usize>() % program.len();
+                program[target_index] = SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()];
+            }  
+            1 => { program.push(SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()]); } 
+            2 => { program.remove(s.read::<usize>() % program_len); }
+            _ => {}
         }
     }
     program

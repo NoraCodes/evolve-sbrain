@@ -1,113 +1,34 @@
 extern crate sbrain;
 extern crate random;
 extern crate rayon;
-use random::Source; // Trait for randomness iteration
-use rayon::prelude::*;
 
 mod randomness;
+
+mod generate;
+use generate::{generate_population, generate_random_program};
+
+mod mutate;
+use mutate::mutate_population;
+
+mod cost;
+use cost::cost_population;
+
+mod util;
+use util::sort_population_by_cost;
+
+const MUTATIONS_PER_CYCLE: usize = 20;
+const STARTING_LENGTH: usize = 8;
+const MAX_RUNTIME: u32 = 64;
+const POPULATION_SIZE: usize = 16;
+
+type Program = Vec<char>;
+type Population = Vec<(u64, Program)>;
+type UncostedPopulation = Vec<Program>;
 
 const SB_SYMBOLS: [char; 26] = ['<', '>', '-', '+', '.', ',', '[', ']',
                                 '{', '}', '(', ')', 'z', '!', 's', 'S', 
                                 '@', '|', '&', '*', '^', 'a', 'd', 'q', 
                                 'm', 'p'];
-
-const MUTATIONS_PER_CYCLE: usize = 3;
-const STARTING_LENGTH: usize = 32;
-const MAX_RUNTIME: u32 = 128;
-const POPULATION_SIZE: usize = 16;
-
-const LENGTH_WEIGHT: u64 = 1024;
-
-type Program = Vec<char>;
-type Population = Vec<(u64, Program)>;
-
-fn generate_random_program(length: usize) -> Program {
-    let mut s = randomness::get_randomness();
-    let mut r = Vec::with_capacity(length);
-
-    s.iter()
-        .take(length)
-        .map(|index: usize| { r.push(SB_SYMBOLS[index % SB_SYMBOLS.len()]) })
-        .count(); // .count here simply consumes the iterator so it is actually evaluated
-    r
-}
-
-fn generate_population(length: usize, individuals: usize) -> Population {
-    use std::u64::MAX;
-    (0..individuals).into_par_iter().map(|_| { (MAX, generate_random_program(length)) }).collect()
-}
-
-fn mutate_program(mut program: Program) -> Program {
-    let mut s = randomness::get_randomness();
-    for _ in 0..MUTATIONS_PER_CYCLE {
-        let program_len = program.len();
-        let mutation_type = s.read::<usize>() % 5; // HACK! Make enum and match
-        match mutation_type {
-            0|3|4 => {
-                let target_index: usize = s.read::<usize>() % program.len();
-                program[target_index] = SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()];
-            }  
-            1 => { program.insert(s.read::<usize>() % program_len, SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()]); } 
-            2 => { program.remove(s.read::<usize>() % program_len); }
-            _ => {}
-        }
-    }
-    program
-}
-
-fn mutate_population(population: Population) -> Vec<Program> {
-    // Reserve one for the best and one for fresh blood
-    let empty_slots = population.len() - 2;
-    // Create buffer and iterator
-    let mut new_population = Vec::with_capacity(population.len());
-    let mut pop_iter = population.into_iter();
-    // Preserve the best program, so no reverse progress happens
-    new_population.push(pop_iter.next().unwrap().1);
-    // Mutate the best to fill half the new population
-    let best_program = new_population[0].clone();
-    for _ in 0..(empty_slots / 2) {
-        new_population.push(
-            mutate_program(
-                best_program.clone()
-            )
-        )
-    }
-
-    // Now the best from the old population
-    pop_iter.take(empty_slots / 2).map(|prog| new_population.push(mutate_program(prog.1.clone()))).count();
-
-    // Now fresh blood
-    new_population.push(generate_random_program(STARTING_LENGTH));
-    new_population
-}
-
-fn cost_program(program: &Program) -> u64 {
-    let expected_output = "Hello, world!".to_string();
-    let res = sbrain::fixed_evaluate(&(program.iter().collect::<String>()), Some(vec![0]), Some(100));
-
-    // Score for length
-    let mut score = 
-        if expected_output.len() > res.output.len() {expected_output.len() - res.output.len()}
-        else {res.output.len() - expected_output.len()} as u64 * LENGTH_WEIGHT;
-
-    for (expected, actual) in res.output.into_iter().zip(expected_output.chars()) {
-        if expected != actual as u32 {
-            score += i64::abs(expected as i64 - actual as i64) as u64;
-        }
-    }
-    score
-}
-
-fn cost_population(uncosted_population: Vec<Program>) -> Population {
-    uncosted_population.into_par_iter()
-        .map(move |p| (cost_program(&p), p))
-        .collect()
-}
-
-fn sort_population_by_cost(mut population: Population) -> Population {
-    population.sort_by_key(|k| k.0);
-    population
-}
 
 fn main() {
     let mut pop: Population = generate_population(STARTING_LENGTH, POPULATION_SIZE);
@@ -115,7 +36,7 @@ fn main() {
     let mut last_cost = std::u64::MAX;
     loop {
         tries += 1;
-        pop = cost_population(mutate_population(pop));
+        pop = cost_population(mutate_population(pop, MUTATIONS_PER_CYCLE, STARTING_LENGTH));
         pop = sort_population_by_cost(pop);
 
         // Report only improvements

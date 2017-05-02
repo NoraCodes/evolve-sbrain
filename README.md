@@ -33,18 +33,6 @@ Ran for 100 cycles and did not halt
 [999] -> ,.*+.+.s-^a -> [999, 1000, 1001]
 ```
 
-The optimal program, of course, is `,.+.+.`. The final program this found is, in a sort of pseudo-assembly:
-
-1. Get input
-2. Put input
-3. Multiply
-4. Add one to the current cell
-5. Output
-6. Add one to the current cell
-7. Output
-8. Bitshift to the left
-9. Subtract one from the current cell
-10. Bitwise NOR
-11. Add
+The optimal program, of course, is `,.+.+.`. 
 
 There are a number of sample configurations in `sample-configs/`. Try them out!

@@ -1,6 +1,6 @@
 mutations_per_generation = 3
 initial_program_length = 8
-max_runtime = 128
+max_runtime = 32
 population_size = 32
 inputs =  [[1, 2], [6, 4], [100, 800], [2, 6], [8, 1]]
 targets = [[3],    [10],   [900],      [8],    [9]]

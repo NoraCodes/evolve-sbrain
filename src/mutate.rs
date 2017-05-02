@@ -13,9 +13,9 @@ pub fn mutate_program(mut program: Program, cfg: Arc<Configuration>) -> Program 
             program = generate_random_program(cfg.initial_program_length);
             program_len = cfg.initial_program_length;
         }
-        let mutation_type = s.read::<usize>() % 5; // HACK! Make enum and match
+        let mutation_type = s.read::<usize>() % 3; // HACK! Make enum and match
         match mutation_type {
-            0|3|4 => {
+            0 => {
                 let target_index: usize = s.read::<usize>() % program.len();
                 program[target_index] = SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()];
             }  

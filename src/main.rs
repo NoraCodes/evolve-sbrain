@@ -1,3 +1,5 @@
+#![feature(slice_concat_ext)]
+
 extern crate sbrain;
 extern crate random;
 extern crate rayon;

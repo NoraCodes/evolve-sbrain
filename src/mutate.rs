@@ -32,15 +32,24 @@ pub fn mutate_population(population: Population, cfg: Arc<Configuration>) -> Unc
     let empty_slots = population.len() - 2;
     // Create buffer and iterator
     let mut new_population = Vec::with_capacity(population.len());
-    let mut pop_iter = population.into_iter();
     // Preserve the best program, so no reverse progress happens
-    new_population.push(pop_iter.next().unwrap().1);
-    // Mutate the best to fill half the new population
+    new_population.push(population[0].clone().1);
     let best_program = new_population[0].clone();
-    for _ in 0..(empty_slots / 2) {
-        new_population.push(mutate_program(best_program.clone(), cfg.clone()))
+
+    // Mutate the best to fill half the new population
+    for old_program_to_cross_with in 0..(empty_slots / 2) {
+        new_population.push(
+            // Mutate the best and one of the top 50%, make them have kids.
+            cross_programs(
+                mutate_program(best_program.clone(), cfg.clone()),
+                mutate_program(population[old_program_to_cross_with].1.clone(), cfg.clone())
+            ).1
+        )
     }
 
+    let mut pop_iter = population.into_iter();
+    // Skip the first program
+    pop_iter.next();
     // Now the best from the old population
     pop_iter.take(empty_slots / 2).map(
         |prog| new_population.push(mutate_program(prog.1.clone(), cfg.clone()))
@@ -49,4 +58,22 @@ pub fn mutate_population(population: Population, cfg: Arc<Configuration>) -> Unc
     // Now fresh blood
     new_population.push(generate_random_program(cfg.initial_program_length));
     new_population
+}
+
+fn cross_programs(a: Program, b: Program) -> (Program, Program) {
+    use std::cmp::min;
+    use std::slice::SliceConcatExt;
+    let min_length = min(a.len(), b.len());
+    let mut rand = get_randomness();
+    // Generate a section to pull and replace
+    let upper_bound: usize = (rand.read::<usize>() % (min_length - 1)) + 1;
+    let lower_bound: usize = rand.read::<usize>() % (upper_bound);
+
+    let a_section = &a[lower_bound..upper_bound];
+    let b_section = &b[lower_bound..upper_bound];
+
+    let new_a = [&a[0..lower_bound], a_section, &a[upper_bound..a.len()]].concat();
+    let new_b = [&b[0..lower_bound], b_section, &b[upper_bound..b.len()]].concat();
+
+    (new_a, new_b)
 }

@@ -2,6 +2,14 @@ extern crate sbrain;
 extern crate random;
 extern crate rayon;
 
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+
+extern crate toml;
+
+use std::sync::Arc;
+
 mod randomness;
 
 mod generate;
@@ -16,10 +24,8 @@ use cost::cost_population;
 mod util;
 use util::sort_population_by_cost;
 
-const MUTATIONS_PER_CYCLE: usize = 20;
-const STARTING_LENGTH: usize = 8;
-const MAX_RUNTIME: u32 = 64;
-const POPULATION_SIZE: usize = 16;
+mod parameters;
+use parameters::{read_config, Configuration};
 
 type Program = Vec<char>;
 type Population = Vec<(u64, Program)>;
@@ -31,21 +37,32 @@ const SB_SYMBOLS: [char; 26] = ['<', '>', '-', '+', '.', ',', '[', ']',
                                 'm', 'p'];
 
 fn main() {
-    let mut pop: Population = generate_population(STARTING_LENGTH, POPULATION_SIZE);
+    use std::env::args;
+    let argv: Vec<_> = args().collect();
+
+    if argv.len() < 2 {
+        println!("Provide the name of a configuration file to run the evolver.");
+        std::process::exit(1);
+    }
+
+    use std::path::Path;
+    let path = Path::new(&argv[1]);
+    let config = Arc::new(read_config(path));
+    println!("{:?}", config);
+
+    let mut pop: Population = generate_population(config.clone());
     let mut tries = 0;
     let mut last_cost = std::u64::MAX;
     loop {
         tries += 1;
-        pop = cost_population(mutate_population(pop, MUTATIONS_PER_CYCLE, STARTING_LENGTH));
+        pop = cost_population(mutate_population(pop, config.clone()), config.clone());
         pop = sort_population_by_cost(pop);
 
         // Report only improvements
         if pop[0].0 < last_cost {
             last_cost = pop[0].0;
             let prog = pop[0].1.iter().collect::<String>();
-            println!("Generation {:5} Cost {:5}: {} \t-> {:?}", tries, last_cost, 
-                prog,
-                sbrain::fixed_evaluate(&prog, Some(vec![0]), Some(MAX_RUNTIME)).output);
+            println!("Generation {:5} Cost {:5}: {}", tries, last_cost, prog);
         }
 
         // If the cost is zero, this generation has won!
@@ -53,12 +70,17 @@ fn main() {
     }
 
     let p = pop.into_iter().nth(0).unwrap();
-    let res = sbrain::fixed_evaluate(&(p.1.iter().collect::<String>()), Some(vec![0]), Some(MAX_RUNTIME));
+
     println!("Program found after {} tries.", tries);
     println!("{}", p.1.iter().collect::<String>());
-    println!("Ran for {} cycles and {} halt.\nGave: {:?}", 
+    for i in 0..config.inputs.len() {
+        let res = sbrain::fixed_evaluate(&(p.1.iter().collect::<String>()), Some(config.inputs[i].clone()), Some(100));
+        println!("Ran for {} cycles and {} halt\n{:?} -> {} -> {:?}",
         res.cycles, 
         if res.halted {"did"} else {"did not"}, 
-        res.output);
-    
+        config.inputs[i],
+        p.1.iter().collect::<String>(),
+        res.output
+        );
+    }
 }

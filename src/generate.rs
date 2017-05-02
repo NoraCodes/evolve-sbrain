@@ -1,5 +1,5 @@
 use super::randomness::get_randomness;
-use super::{Program, Population};
+use super::{Program, Population, Configuration, Arc};
 use super::SB_SYMBOLS;
 
 use random::Source;
@@ -16,9 +16,9 @@ pub fn generate_random_program(length: usize) -> Program {
     r
 }
 
-pub fn generate_population(length: usize, individuals: usize) -> Population {
+pub fn generate_population(cfg: Arc<Configuration>) -> Population {
     use std::u64::MAX;
-    (0..individuals).into_par_iter()
-        .map(|_| { (MAX, generate_random_program(length)) })
+    (0..cfg.population_size).into_par_iter()
+        .map(|_| { (MAX, generate_random_program(cfg.initial_program_length)) })
         .collect()
 }

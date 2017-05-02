@@ -1,17 +1,17 @@
-use super::{Program, Population, UncostedPopulation};
+use super::{Program, Population, UncostedPopulation, Configuration, Arc};
 use super::randomness::get_randomness;
 use super::generate_random_program;
 use super::SB_SYMBOLS;
 
 use random::Source;
 
-pub fn mutate_program(mut program: Program, mutations_per_cycle: usize, starting_length: usize) -> Program {
+pub fn mutate_program(mut program: Program, cfg: Arc<Configuration>) -> Program {
     let mut s = get_randomness();
-    for _ in 0..s.read::<usize>() % mutations_per_cycle {
+    for _ in 0..s.read::<usize>() % cfg.mutations_per_generation {
         let mut program_len = program.len();
         if program_len == 0 {
-            program = generate_random_program(starting_length);
-            program_len = starting_length;
+            program = generate_random_program(cfg.initial_program_length);
+            program_len = cfg.initial_program_length;
         }
         let mutation_type = s.read::<usize>() % 5; // HACK! Make enum and match
         match mutation_type {
@@ -27,7 +27,7 @@ pub fn mutate_program(mut program: Program, mutations_per_cycle: usize, starting
     program
 }
 
-pub fn mutate_population(population: Population, mutations_per_cycle: usize, starting_length: usize) -> UncostedPopulation {
+pub fn mutate_population(population: Population, cfg: Arc<Configuration>) -> UncostedPopulation {
     // Reserve one for the best and one for fresh blood
     let empty_slots = population.len() - 2;
     // Create buffer and iterator
@@ -38,21 +38,15 @@ pub fn mutate_population(population: Population, mutations_per_cycle: usize, sta
     // Mutate the best to fill half the new population
     let best_program = new_population[0].clone();
     for _ in 0..(empty_slots / 2) {
-        new_population.push(
-            mutate_program(
-                best_program.clone(),
-                mutations_per_cycle,
-                starting_length
-            )
-        )
+        new_population.push(mutate_program(best_program.clone(), cfg.clone()))
     }
 
     // Now the best from the old population
     pop_iter.take(empty_slots / 2).map(
-        |prog| new_population.push(mutate_program(prog.1.clone(), mutations_per_cycle, starting_length))
+        |prog| new_population.push(mutate_program(prog.1.clone(), cfg.clone()))
     ).count();
 
     // Now fresh blood
-    new_population.push(generate_random_program(starting_length));
+    new_population.push(generate_random_program(cfg.initial_program_length));
     new_population
 }

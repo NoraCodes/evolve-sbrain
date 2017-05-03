@@ -8,6 +8,16 @@ pub struct Configuration {
     pub population_size: usize,
     pub targets: Vec<Vec<u32>>,
     pub inputs: Vec<Vec<u32>>,
+    legacy: Option<bool>,
+}
+
+impl Configuration {
+    // Check if the configuration indicates legacy mode; it is false by default.
+    pub fn is_legacy(&self) -> bool {
+        if let Some(l) = self.legacy {
+            l 
+        } else { false }
+    }
 }
 
 use std::path::Path;

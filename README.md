@@ -35,4 +35,23 @@ Ran for 100 cycles and did not halt
 
 The optimal program, of course, is `,.+.+.`. 
 
-There are a number of sample configurations in `sample-configs/`. Try them out!
+There are a number of sample configurations in `sample-configs/`. Try them out! 
+Note also that the option `legacy = true` can be added to the config file to force the algorithm to use only the
+original 8 Brainf*** instructions. For instance:
+
+```
+Generation     1 Cost  2013: +,.,.--,,.
+Generation     3 Cost  1011: ]+>,[.[.[>.
+Generation     7 Cost    12: <<,+.++..
+Generation     8 Cost     6: >,..+.
+Generation     9 Cost     3: <<-,.++..
+Generation  1675 Cost     0: <-<---+,.+.+.
+Program found after 1675 tries.
+<-<---+,.+.+.
+Ran for 128 cycles and did not halt
+[1] -> <-<---+,.+.+. -> [1, 2, 3]
+Ran for 128 cycles and did not halt
+[2] -> <-<---+,.+.+. -> [2, 3, 4]
+Ran for 128 cycles and did not halt
+[999] -> <-<---+,.+.+. -> [999, 1000, 1001]
+```

@@ -38,6 +38,8 @@ const SB_SYMBOLS: [char; 26] = ['<', '>', '-', '+', '.', ',', '[', ']',
                                 '@', '|', '&', '*', '^', 'a', 'd', 'q', 
                                 'm', 'p'];
 
+const BF_SYMBOLS: [char; 8] = ['<', '>', '-', '+', '.', ',', '[', ']',];
+
 fn main() {
     use std::env::args;
     let argv: Vec<_> = args().collect();

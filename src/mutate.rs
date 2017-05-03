@@ -1,25 +1,36 @@
 use super::{Program, Population, UncostedPopulation, Configuration, Arc};
 use super::randomness::get_randomness;
 use super::generate_random_program;
-use super::SB_SYMBOLS;
+use super::{SB_SYMBOLS, BF_SYMBOLS};
 
 use random::Source;
 
 pub fn mutate_program(mut program: Program, cfg: Arc<Configuration>) -> Program {
     let mut s = get_randomness();
-    for _ in 0..s.read::<usize>() % cfg.mutations_per_generation {
+
+    // Loop through exactly the given number of mutations.
+    for _ in 0..cfg.mutations_per_generation {
         let mut program_len = program.len();
+
+        // Mutating an empty program means just making a new program.
         if program_len == 0 {
-            program = generate_random_program(cfg.initial_program_length);
+            program = generate_random_program(cfg.clone());
             program_len = cfg.initial_program_length;
         }
+
+        // Select the right set of symbols.
+        // These aliases are here to satisfy the borrow checker.
+        let bf_symbols = &BF_SYMBOLS[..];
+        let sb_symbols = &SB_SYMBOLS[..];
+        let symbols = if cfg.is_legacy() { bf_symbols } else { sb_symbols };
+
         let mutation_type = s.read::<usize>() % 3; // HACK! Make enum and match
         match mutation_type {
             0 => {
                 let target_index: usize = s.read::<usize>() % program.len();
-                program[target_index] = SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()];
+                program[target_index] = symbols[s.read::<usize>() % symbols.len()];
             }  
-            1 => { program.insert(s.read::<usize>() % program_len, SB_SYMBOLS[s.read::<usize>() % SB_SYMBOLS.len()]); } 
+            1 => { program.insert(s.read::<usize>() % program_len, symbols[s.read::<usize>() % symbols.len()]); } 
             2 => { program.remove(s.read::<usize>() % program_len); }
             _ => {}
         }
@@ -56,7 +67,7 @@ pub fn mutate_population(population: Population, cfg: Arc<Configuration>) -> Unc
     ).count();
 
     // Now fresh blood
-    new_population.push(generate_random_program(cfg.initial_program_length));
+    new_population.push(generate_random_program(cfg.clone()));
     new_population
 }
 
@@ -64,10 +75,17 @@ fn cross_programs(a: Program, b: Program) -> (Program, Program) {
     use std::cmp::min;
     use std::slice::SliceConcatExt;
     let min_length = min(a.len(), b.len());
+
+    // Can't cross programs that are too short.
+    // Not having this protections causes div-by-zero when computing bounds!
+    if min_length < 2 { return (a,b); }
+    
     let mut rand = get_randomness();
     // Generate a section to pull and replace
     let upper_bound: usize = (rand.read::<usize>() % (min_length - 1)) + 1;
     let lower_bound: usize = rand.read::<usize>() % (upper_bound);
+
+    assert!(upper_bound < min_length, "Upper bound is greater than the minimum length");
 
     let a_section = &a[lower_bound..upper_bound];
     let b_section = &b[lower_bound..upper_bound];

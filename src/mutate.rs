@@ -90,8 +90,8 @@ fn cross_programs(a: Program, b: Program) -> (Program, Program) {
     let a_section = &a[lower_bound..upper_bound];
     let b_section = &b[lower_bound..upper_bound];
 
-    let new_a = [&a[0..lower_bound], a_section, &a[upper_bound..a.len()]].concat();
-    let new_b = [&b[0..lower_bound], b_section, &b[upper_bound..b.len()]].concat();
+    let new_a = [&a[0..lower_bound], b_section, &a[upper_bound..a.len()]].concat();
+    let new_b = [&b[0..lower_bound], a_section, &b[upper_bound..b.len()]].concat();
 
     (new_a, new_b)
 }

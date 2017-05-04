@@ -2,6 +2,8 @@
 
 This program uses a simple, highly parallel evolutionary algorithm to evolve computer programs in my language [sbrain](https://github.com/silverwingedseraph/sbrain).
 
+If you're looking to run the generated programs, take a look at [sbic](https://github.com/silverwingedseraph/sbic).
+
 It is quite effective at evolving relatively simple algorithms. It is invoked with `cargo run --release <config file>`, where the config file looks like this:
 
 ```

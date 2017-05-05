@@ -71,9 +71,9 @@ pub fn mutate_population(population: Population, cfg: &Configuration) -> Uncoste
     new_population
 }
 
-fn cross_programs(a: Program, b: Program) -> (Program, Program) {
+fn cross_programs(mut a: Program, mut b: Program) -> (Program, Program) {
     use std::cmp::min;
-    use std::slice::SliceConcatExt;
+    use std::mem;
     let min_length = min(a.len(), b.len());
 
     // Can't cross programs that are too short.
@@ -87,11 +87,10 @@ fn cross_programs(a: Program, b: Program) -> (Program, Program) {
 
     assert!(upper_bound < min_length, "Upper bound is greater than the minimum length");
 
-    let a_section = &a[lower_bound..upper_bound];
-    let b_section = &b[lower_bound..upper_bound];
+    // Run through the section, swapping values
+    for i in lower_bound..upper_bound {
+        mem::swap(&mut a[i], &mut b[i])
+    }
 
-    let new_a = [&a[0..lower_bound], b_section, &a[upper_bound..a.len()]].concat();
-    let new_b = [&b[0..lower_bound], a_section, &b[upper_bound..b.len()]].concat();
-
-    (new_a, new_b)
+    (a, b)
 }

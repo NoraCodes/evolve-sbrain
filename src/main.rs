@@ -1,5 +1,5 @@
 extern crate sbrain;
-extern crate random;
+extern crate rand;
 extern crate rayon;
 
 extern crate serde;
@@ -7,8 +7,6 @@ extern crate serde;
 extern crate serde_derive;
 
 extern crate toml;
-
-mod randomness;
 
 mod generate;
 use generate::{generate_population, generate_random_program};

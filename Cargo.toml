@@ -3,7 +3,7 @@ authors = ["SilverWingedSeraph <lfstindall@gmail.com>"]
 name = "evolve-sbrain"
 version = "0.1.0"
 [dependencies]
-random = "*"
+rand = "^0.3"
 rayon = "*"
 sbrain = "*"
 serde = "^1"

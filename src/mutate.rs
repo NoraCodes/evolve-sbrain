@@ -1,12 +1,12 @@
 use super::{Program, Population, UncostedPopulation, Configuration};
-use super::randomness::get_randomness;
+use super::rand;
 use super::generate_random_program;
 use super::{SB_SYMBOLS, BF_SYMBOLS};
 
-use random::Source;
+use rand::Rng;
 
 pub fn mutate_program(mut program: Program, cfg: &Configuration) -> Program {
-    let mut s = get_randomness();
+    let mut s = rand::thread_rng();
 
     // Loop through exactly the given number of mutations.
     for _ in 0..cfg.mutations_per_generation {
@@ -21,14 +21,14 @@ pub fn mutate_program(mut program: Program, cfg: &Configuration) -> Program {
         // Select the right set of symbols.
         let symbols = if cfg.is_legacy() { BF_SYMBOLS } else { SB_SYMBOLS };
 
-        let mutation_type = s.read::<usize>() % 3; // HACK! Make enum and match
+        let mutation_type = s.gen_range(0, 3); // HACK! Make enum and match
         match mutation_type {
             0 => {
-                let target_index: usize = s.read::<usize>() % program.len();
-                program[target_index] = symbols[s.read::<usize>() % symbols.len()];
+                let target_index: usize = s.gen_range(0, program.len());
+                program[target_index] = *s.choose(symbols).unwrap();
             }  
-            1 => { program.insert(s.read::<usize>() % program_len, symbols[s.read::<usize>() % symbols.len()]); } 
-            2 => { program.remove(s.read::<usize>() % program_len); }
+            1 => { program.insert(s.gen_range(0, program_len), *s.choose(symbols).unwrap()); } 
+            2 => { program.remove(s.gen_range(0, program_len)); }
             _ => {}
         }
     }
@@ -80,10 +80,10 @@ fn cross_programs(mut a: Program, mut b: Program) -> (Program, Program) {
     // Not having this protections causes div-by-zero when computing bounds!
     if min_length < 2 { return (a,b); }
     
-    let mut rand = get_randomness();
+    let mut rand = rand::thread_rng();
     // Generate a section to pull and replace
-    let upper_bound: usize = (rand.read::<usize>() % (min_length - 1)) + 1;
-    let lower_bound: usize = rand.read::<usize>() % (upper_bound);
+    let upper_bound: usize = rand.gen_range(0, (min_length - 1)) + 1;
+    let lower_bound: usize = rand.gen_range(0, upper_bound);
 
     assert!(upper_bound < min_length, "Upper bound is greater than the minimum length");
 

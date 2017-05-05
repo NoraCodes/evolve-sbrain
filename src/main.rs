@@ -10,8 +10,6 @@ extern crate serde_derive;
 
 extern crate toml;
 
-use std::sync::Arc;
-
 mod randomness;
 
 mod generate;
@@ -51,15 +49,15 @@ fn main() {
 
     use std::path::Path;
     let path = Path::new(&argv[1]);
-    let config = Arc::new(read_config(path));
+    let config = read_config(path);
     println!("{:?}", config);
 
-    let mut pop: Population = generate_population(config.clone());
+    let mut pop: Population = generate_population(&config);
     let mut tries = 0;
     let mut last_cost = std::u64::MAX;
     loop {
         tries += 1;
-        pop = cost_population(mutate_population(pop, config.clone()), config.clone());
+        pop = cost_population(mutate_population(pop, &config), &config);
         pop = sort_population_by_cost(pop);
 
         // Report only improvements

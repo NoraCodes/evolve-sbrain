@@ -1,11 +1,11 @@
 use super::randomness::get_randomness;
-use super::{Program, Population, Configuration, Arc};
+use super::{Program, Population, Configuration};
 use super::{SB_SYMBOLS, BF_SYMBOLS};
 
 use random::Source;
 use rayon::prelude::*;
 
-pub fn generate_random_program(cfg: Arc<Configuration>) -> Program {
+pub fn generate_random_program(cfg: &Configuration) -> Program {
     let mut s = get_randomness();
     let mut r = Vec::with_capacity(cfg.initial_program_length);
 
@@ -19,9 +19,9 @@ pub fn generate_random_program(cfg: Arc<Configuration>) -> Program {
     r
 }
 
-pub fn generate_population(cfg: Arc<Configuration>) -> Population {
+pub fn generate_population(cfg: &Configuration) -> Population {
     use std::u64::MAX;
     (0..cfg.population_size).into_par_iter()
-        .map(|_| { (MAX, generate_random_program(cfg.clone())) })
+        .map(|_| { (MAX, generate_random_program(cfg)) })
         .collect()
 }

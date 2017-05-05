@@ -1,11 +1,11 @@
-use super::{Program, Population, UncostedPopulation, Configuration, Arc};
+use super::{Program, Population, UncostedPopulation, Configuration};
 use super::randomness::get_randomness;
 use super::generate_random_program;
 use super::{SB_SYMBOLS, BF_SYMBOLS};
 
 use random::Source;
 
-pub fn mutate_program(mut program: Program, cfg: Arc<Configuration>) -> Program {
+pub fn mutate_program(mut program: Program, cfg: &Configuration) -> Program {
     let mut s = get_randomness();
 
     // Loop through exactly the given number of mutations.
@@ -14,7 +14,7 @@ pub fn mutate_program(mut program: Program, cfg: Arc<Configuration>) -> Program 
 
         // Mutating an empty program means just making a new program.
         if program_len == 0 {
-            program = generate_random_program(cfg.clone());
+            program = generate_random_program(cfg);
             program_len = cfg.initial_program_length;
         }
 
@@ -35,7 +35,7 @@ pub fn mutate_program(mut program: Program, cfg: Arc<Configuration>) -> Program 
     program
 }
 
-pub fn mutate_population(population: Population, cfg: Arc<Configuration>) -> UncostedPopulation {
+pub fn mutate_population(population: Population, cfg: &Configuration) -> UncostedPopulation {
     // Reserve one for the best and one for fresh blood
     let empty_slots = population.len() - 2;
     // Create buffer and iterator
@@ -51,8 +51,8 @@ pub fn mutate_population(population: Population, cfg: Arc<Configuration>) -> Unc
         new_population.push(
             // Mutate the best and one of the top 50%, make them have kids.
             cross_programs(
-                mutate_program(best_program.clone(), cfg.clone()),
-                mutate_program(population[old_program_to_cross_with].1.clone(), cfg.clone())
+                mutate_program(best_program.clone(), cfg),
+                mutate_program(population[old_program_to_cross_with].1.clone(), cfg)
             ).1
         )
     }
@@ -66,8 +66,8 @@ pub fn mutate_population(population: Population, cfg: Arc<Configuration>) -> Unc
     ).count();
 
     // Now fresh blood
-    new_population.push(generate_random_program(cfg.clone()));
-    if cfg.is_free_mut() { new_population.push(generate_random_program(cfg.clone())); }
+    new_population.push(generate_random_program(cfg));
+    if cfg.is_free_mut() { new_population.push(generate_random_program(cfg)); }
     new_population
 }
 

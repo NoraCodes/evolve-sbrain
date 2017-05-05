@@ -1,12 +1,10 @@
 use sbrain;
 use rayon::prelude::*;
-
-use std::sync::Arc;
 use super::{Program, Population, UncostedPopulation, Configuration};
 
 const LENGTH_WEIGHT: u64 = 1024;
 
-fn cost_program(program: &Program, cfg: Arc<Configuration>) -> u64 {
+fn cost_program(program: &Program, cfg: &Configuration) -> u64 {
     let mut cost = 0;
     for i in 0..cfg.inputs.len() {
         cost += cost_single_target(program, &cfg.inputs[i], &cfg.targets[i]);
@@ -30,8 +28,8 @@ fn cost_single_target(program: &Program, input: &[u32], target: &[u32]) -> u64 {
     score
 }
 
-pub fn cost_population(uncosted_population: UncostedPopulation, cfg: Arc<Configuration>) -> Population {
+pub fn cost_population(uncosted_population: UncostedPopulation, cfg: &Configuration) -> Population {
     uncosted_population.into_par_iter()
-        .map(move |p| (cost_program(&p, cfg.clone()), p))
+        .map(move |p| (cost_program(&p, cfg), p))
         .collect()
 }

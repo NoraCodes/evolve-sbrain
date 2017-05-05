@@ -1,7 +1,7 @@
-mutations_per_generation = 3
-initial_program_length = 8
-max_runtime = 64
-population_size = 64
+mutations_per_generation = 8
+initial_program_length = 2
+max_runtime = 512
+population_size = 128
 inputs =  [[2], [2, 4], [100, 2, 1024]]
 targets = [[1], [1, 2], [50,  1, 512]]
 legacy = true

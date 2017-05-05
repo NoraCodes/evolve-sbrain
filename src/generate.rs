@@ -1,5 +1,5 @@
 use super::randomness::get_randomness;
-use super::{Program, Population, Configuration};
+use super::{Program, ProgramWithCost, Population, Configuration};
 use super::{SB_SYMBOLS, BF_SYMBOLS};
 
 use random::Source;
@@ -22,6 +22,6 @@ pub fn generate_random_program(cfg: &Configuration) -> Program {
 pub fn generate_population(cfg: &Configuration) -> Population {
     use std::u64::MAX;
     (0..cfg.population_size).into_par_iter()
-        .map(|_| { (MAX, generate_random_program(cfg)) })
+        .map(|_| { ProgramWithCost::new(MAX, generate_random_program(cfg)) })
         .collect()
 }

@@ -40,7 +40,7 @@ pub fn mutate_population(population: Population, cfg: &Configuration) -> Uncoste
     let empty_slots = population.len() - 2;
     // Create buffer and iterator
     let mut new_population = Vec::with_capacity(population.len());
-    let best_program = population[0].clone().1;
+    let best_program = population[0].clone().program;
     if !cfg.is_free_mut() {
         // Preserve the best program, so no reverse progress happens
         new_population.push(best_program.clone());
@@ -52,7 +52,7 @@ pub fn mutate_population(population: Population, cfg: &Configuration) -> Uncoste
             // Mutate the best and one of the top 50%, make them have kids.
             cross_programs(
                 mutate_program(best_program.clone(), cfg),
-                mutate_program(population[old_program_to_cross_with].1.clone(), cfg)
+                mutate_program(population[old_program_to_cross_with].program.clone(), cfg)
             ).1
         )
     }
@@ -62,7 +62,7 @@ pub fn mutate_population(population: Population, cfg: &Configuration) -> Uncoste
     pop_iter.next();
     // Now the best from the old population
     pop_iter.take(empty_slots / 2).map(
-        |prog| new_population.push(mutate_program(prog.1.clone(), cfg.clone()))
+        |prog| new_population.push(mutate_program(prog.program.clone(), cfg.clone()))
     ).count();
 
     // Now fresh blood

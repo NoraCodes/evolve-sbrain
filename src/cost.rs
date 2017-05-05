@@ -1,6 +1,6 @@
 use sbrain;
 use rayon::prelude::*;
-use super::{Program, Population, UncostedPopulation, Configuration};
+use super::{Program, ProgramWithCost, Population, UncostedPopulation, Configuration};
 
 const LENGTH_WEIGHT: u64 = 1024;
 
@@ -30,6 +30,6 @@ fn cost_single_target(program: &Program, input: &[u32], target: &[u32]) -> u64 {
 
 pub fn cost_population(uncosted_population: UncostedPopulation, cfg: &Configuration) -> Population {
     uncosted_population.into_par_iter()
-        .map(move |p| (cost_program(&p, cfg), p))
+        .map(move |p| ProgramWithCost::new(cost_program(&p, cfg), p))
         .collect()
 }

@@ -47,12 +47,12 @@ pub fn mutate_population(population: Population, cfg: &Configuration) -> Uncoste
     }
 
     // Mutate the best to fill half the new population
-    for old_program_to_cross_with in 0..(empty_slots / 2) {
+    for individual in population.iter().take(empty_slots / 2) {
         new_population.push(
             // Mutate the best and one of the top 50%, make them have kids.
             cross_programs(
                 mutate_program(best_program.clone(), cfg),
-                mutate_program(population[old_program_to_cross_with].program.clone(), cfg)
+                mutate_program(individual.program.clone(), cfg)
             ).1
         )
     }
@@ -62,7 +62,7 @@ pub fn mutate_population(population: Population, cfg: &Configuration) -> Uncoste
     pop_iter.next();
     // Now the best from the old population
     pop_iter.take(empty_slots / 2).map(
-        |prog| new_population.push(mutate_program(prog.program.clone(), cfg.clone()))
+        |prog| new_population.push(mutate_program(prog.program, cfg))
     ).count();
 
     // Now fresh blood

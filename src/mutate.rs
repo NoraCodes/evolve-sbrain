@@ -19,10 +19,7 @@ pub fn mutate_program(mut program: Program, cfg: Arc<Configuration>) -> Program 
         }
 
         // Select the right set of symbols.
-        // These aliases are here to satisfy the borrow checker.
-        let bf_symbols = &BF_SYMBOLS[..];
-        let sb_symbols = &SB_SYMBOLS[..];
-        let symbols = if cfg.is_legacy() { bf_symbols } else { sb_symbols };
+        let symbols = if cfg.is_legacy() { BF_SYMBOLS } else { SB_SYMBOLS };
 
         let mutation_type = s.read::<usize>() % 3; // HACK! Make enum and match
         match mutation_type {
@@ -43,9 +40,11 @@ pub fn mutate_population(population: Population, cfg: Arc<Configuration>) -> Unc
     let empty_slots = population.len() - 2;
     // Create buffer and iterator
     let mut new_population = Vec::with_capacity(population.len());
-    // Preserve the best program, so no reverse progress happens
-    new_population.push(population[0].clone().1);
-    let best_program = new_population[0].clone();
+    let best_program = population[0].clone().1;
+    if !cfg.is_free_mut() {
+        // Preserve the best program, so no reverse progress happens
+        new_population.push(best_program.clone());
+    }
 
     // Mutate the best to fill half the new population
     for old_program_to_cross_with in 0..(empty_slots / 2) {
@@ -68,6 +67,7 @@ pub fn mutate_population(population: Population, cfg: Arc<Configuration>) -> Unc
 
     // Now fresh blood
     new_population.push(generate_random_program(cfg.clone()));
+    if cfg.is_free_mut() { new_population.push(generate_random_program(cfg.clone())); }
     new_population
 }
 

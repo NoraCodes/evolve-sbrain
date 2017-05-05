@@ -33,12 +33,12 @@ type Program = Vec<char>;
 type Population = Vec<(u64, Program)>;
 type UncostedPopulation = Vec<Program>;
 
-const SB_SYMBOLS: [char; 26] = ['<', '>', '-', '+', '.', ',', '[', ']',
+const SB_SYMBOLS: &[char] = &['<', '>', '-', '+', '.', ',', '[', ']',
                                 '{', '}', '(', ')', 'z', '!', 's', 'S', 
                                 '@', '|', '&', '*', '^', 'a', 'd', 'q', 
                                 'm', 'p'];
 
-const BF_SYMBOLS: [char; 8] = ['<', '>', '-', '+', '.', ',', '[', ']',];
+const BF_SYMBOLS: &[char] = &['<', '>', '-', '+', '.', ',', '[', ']',];
 
 fn main() {
     use std::env::args;

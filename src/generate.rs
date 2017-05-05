@@ -10,10 +10,7 @@ pub fn generate_random_program(cfg: Arc<Configuration>) -> Program {
     let mut r = Vec::with_capacity(cfg.initial_program_length);
 
     // Determine whether to use BrainFuck symbols or SBrain symbols.
-    // These aliases are here to satisfy the borrow checker.
-    let bf_symbols = &BF_SYMBOLS[..];
-    let sb_symbols = &SB_SYMBOLS[..];
-    let symbols = if cfg.is_legacy() { bf_symbols } else { sb_symbols };
+    let symbols = if cfg.is_legacy() { BF_SYMBOLS } else { SB_SYMBOLS };
 
     s.iter()
         .take(cfg.initial_program_length)

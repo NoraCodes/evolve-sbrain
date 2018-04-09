@@ -1,0 +1,6 @@
+mutations_per_generation = 3
+initial_program_length = 8
+max_runtime = 128
+population_size = 64
+inputs =  [[1, 2], [1, 2, 3], [5, 5, 22, 10], [2, 6, 1, 1, 0, 1], [8, 1]]
+targets = [[3],    [6],       [42],           [11],               [9]]

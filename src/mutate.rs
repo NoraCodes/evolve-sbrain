@@ -21,7 +21,9 @@ pub fn mutate_program(mut program: Program, cfg: &Configuration) -> Program {
         // Select the right set of symbols.
         let symbols = if cfg.is_legacy() { BF_SYMBOLS } else { SB_SYMBOLS };
 
-        let mutation_type = s.gen_range(0, 3); // HACK! Make enum and match
+
+        // Select the type of mutation to perform.
+        let mutation_type = s.gen_range(0, 3); 
         match mutation_type {
             0 => {
                 let target_index: usize = s.gen_range(0, program.len());
@@ -29,15 +31,15 @@ pub fn mutate_program(mut program: Program, cfg: &Configuration) -> Program {
             }  
             1 => { program.insert(s.gen_range(0, program_len), *s.choose(symbols).unwrap()); } 
             2 => { program.remove(s.gen_range(0, program_len)); }
-            _ => {}
+            _ => {unreachable!()}
         }
     }
     program
 }
 
 pub fn mutate_population(population: Population, cfg: &Configuration) -> UncostedPopulation {
-    // Reserve one for the best and one for fresh blood
-    let empty_slots = population.len() - 2;
+    // Reserve one for the best and four for fresh blood
+    let empty_slots = population.len() - 5;
     // Create buffer and iterator
     let mut new_population = Vec::with_capacity(population.len());
     let best_program = population[0].clone().program;
@@ -66,7 +68,10 @@ pub fn mutate_population(population: Population, cfg: &Configuration) -> Uncoste
     ).count();
 
     // Now fresh blood
-    new_population.push(generate_random_program(cfg));
+    for _ in 0..4 {
+        new_population.push(generate_random_program(cfg));
+    }
+    // Free_mut additional population
     if cfg.is_free_mut() { new_population.push(generate_random_program(cfg)); }
     new_population
 }
@@ -82,7 +87,7 @@ fn cross_programs(mut a: Program, mut b: Program) -> (Program, Program) {
     
     let mut rand = rand::thread_rng();
     // Generate a section to pull and replace
-    let upper_bound: usize = rand.gen_range(0, (min_length - 1)) + 1;
+    let upper_bound: usize = rand.gen_range(0, min_length - 1) + 1;
     let lower_bound: usize = rand.gen_range(0, upper_bound);
 
     assert!(upper_bound < min_length, "Upper bound is greater than the minimum length");

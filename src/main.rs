@@ -70,14 +70,14 @@ fn main() {
 
     // Report a successful program
     println!("Program found after {} generations.", tries);
+    println!("{}", p.program_as_string());
     // Report every input
     for i in 0..config.inputs.len() {
         let res = sbrain::fixed_evaluate(&(p.program_as_string()), Some(config.inputs[i].clone()), Some(config.max_runtime as u32));
-        println!("Ran for {} cycles and {} halt\n{:?} -> {} -> {:?}",
+        println!("Ran for {} cycles and {} halt\n{:?} -> {:?}",
         res.cycles, 
         if res.halted {"did"} else {"did not"}, 
         config.inputs[i],
-        p.program_as_string(),
         res.output
         );
     }
